@@ -3,6 +3,14 @@ import "./App.css";
 
 const API_BASE_URL = "http://localhost:5000/api";
 
+const PORTFOLIO_GITHUB_LINK =
+  "https://github.com/Dhoni7-definetlynot/personal-portfolio-";
+
+const INTERN_PROJECT_GITHUB_LINK =
+  "https://github.com/Dhoni7-definetlynot/INTERN-TALENT-HIRING-MANAGEMENT-SYSTEM";
+
+const GITHUB_PROFILE_LINK = "https://github.com/Dhoni7-definetlynot";
+
 const fallbackProjects = [
   {
     id: 1,
@@ -10,7 +18,16 @@ const fallbackProjects = [
     description:
       "A full-stack portfolio website built with React, Express, and MySQL to showcase projects, skills, and contact details.",
     tech_stack: "React.js, Node.js, Express.js, MySQL",
-    github_link: "",
+    github_link: PORTFOLIO_GITHUB_LINK,
+    live_link: "",
+  },
+  {
+    id: 2,
+    title: "Intern Talent Hiring Management System",
+    description:
+      "A full-stack talent hiring management system project developed for internship practice.",
+    tech_stack: "React.js, Node.js, Express.js, MySQL",
+    github_link: INTERN_PROJECT_GITHUB_LINK,
     live_link: "",
   },
 ];
@@ -45,6 +62,35 @@ const fallbackCertifications = [
   },
 ];
 
+function getCorrectGithubLink(project) {
+  const title = (project.title || "").toLowerCase();
+  const description = (project.description || "").toLowerCase();
+  const projectText = `${title} ${description}`;
+
+  if (projectText.includes("personal portfolio")) {
+    return PORTFOLIO_GITHUB_LINK;
+  }
+
+  if (
+    projectText.includes("intern talent") ||
+    projectText.includes("talent hiring") ||
+    projectText.includes("hiring management")
+  ) {
+    return INTERN_PROJECT_GITHUB_LINK;
+  }
+
+  return project.github_link || project.githubLink || "";
+}
+
+function normalizeProject(project) {
+  return {
+    ...project,
+    tech_stack: project.tech_stack || project.techStack || "",
+    github_link: getCorrectGithubLink(project),
+    live_link: project.live_link || project.liveLink || "",
+  };
+}
+
 function App() {
   const [projects, setProjects] = useState(fallbackProjects);
   const [skills, setSkills] = useState(fallbackSkills);
@@ -62,13 +108,17 @@ function App() {
   useEffect(() => {
     async function loadPortfolioData() {
       try {
-        const [projectsResponse, skillsResponse, experienceResponse, certificationsResponse] =
-          await Promise.all([
-            fetch(`${API_BASE_URL}/projects`),
-            fetch(`${API_BASE_URL}/skills`),
-            fetch(`${API_BASE_URL}/experience`),
-            fetch(`${API_BASE_URL}/certifications`),
-          ]);
+        const [
+          projectsResponse,
+          skillsResponse,
+          experienceResponse,
+          certificationsResponse,
+        ] = await Promise.all([
+          fetch(`${API_BASE_URL}/projects`),
+          fetch(`${API_BASE_URL}/skills`),
+          fetch(`${API_BASE_URL}/experience`),
+          fetch(`${API_BASE_URL}/certifications`),
+        ]);
 
         const projectsData = await projectsResponse.json();
         const skillsData = await skillsResponse.json();
@@ -76,7 +126,8 @@ function App() {
         const certificationsData = await certificationsResponse.json();
 
         if (Array.isArray(projectsData) && projectsData.length > 0) {
-          setProjects(projectsData);
+          const fixedProjects = projectsData.map(normalizeProject);
+          setProjects(fixedProjects);
         }
 
         if (Array.isArray(skillsData) && skillsData.length > 0) {
@@ -87,7 +138,10 @@ function App() {
           setExperience(experienceData);
         }
 
-        if (Array.isArray(certificationsData) && certificationsData.length > 0) {
+        if (
+          Array.isArray(certificationsData) &&
+          certificationsData.length > 0
+        ) {
           setCertifications(certificationsData);
         }
       } catch (error) {
@@ -111,9 +165,11 @@ function App() {
   const groupedSkills = useMemo(() => {
     return skills.reduce((groups, skill) => {
       const category = skill.category || "Other";
+
       if (!groups[category]) {
         groups[category] = [];
       }
+
       groups[category].push(skill.skill_name);
       return groups;
     }, {});
@@ -285,7 +341,10 @@ function App() {
 
             <div className="resume-card">
               <h3>Internship Task</h3>
-              <p>Personal portfolio website with frontend, backend, and database.</p>
+              <p>
+                Personal portfolio website with frontend, backend, and
+                database.
+              </p>
               <span>Thiranex</span>
             </div>
           </div>
@@ -323,6 +382,7 @@ function App() {
                 <p className="project-number">
                   0{activeProject + 1} / 0{projects.length}
                 </p>
+
                 <h3>{selectedProject.title}</h3>
                 <p>{selectedProject.description}</p>
 
@@ -336,13 +396,21 @@ function App() {
 
                 <div className="project-actions">
                   {selectedProject.github_link && (
-                    <a href={selectedProject.github_link} target="_blank" rel="noreferrer">
+                    <a
+                      href={selectedProject.github_link}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       GitHub
                     </a>
                   )}
 
                   {selectedProject.live_link && (
-                    <a href={selectedProject.live_link} target="_blank" rel="noreferrer">
+                    <a
+                      href={selectedProject.live_link}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       Live Demo
                     </a>
                   )}
@@ -364,6 +432,7 @@ function App() {
             {experience.map((item) => (
               <div className="timeline-item" key={item.id}>
                 <div className="timeline-dot"></div>
+
                 <div className="timeline-content">
                   <h3>{item.role}</h3>
                   <h4>{item.company}</h4>
@@ -385,17 +454,18 @@ function App() {
                 <h3>{certificate.title}</h3>
                 <p>{certificate.provider}</p>
                 <span>{certificate.year}</span>
+
                 {certificate.certificate_link && (
-  <a
-    href={certificate.certificate_link}
-    target="_blank"
-    rel="noreferrer"
-    className="certificate-link"
-  >
-    View Certificate ↗
-  </a>
-)}
-             </div>
+                  <a
+                    href={certificate.certificate_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="certificate-link"
+                  >
+                    View Certificate ↗
+                  </a>
+                )}
+              </div>
             ))}
           </div>
         </section>
@@ -405,18 +475,23 @@ function App() {
           <h2>Profiles</h2>
 
           <div className="profile-links">
-            <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer">
+            <a
+              href="https://www.linkedin.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
               LinkedIn
             </a>
-            <a href="https://github.com/" target="_blank" rel="noreferrer">
+
+            <a href={GITHUB_PROFILE_LINK} target="_blank" rel="noreferrer">
               GitHub
             </a>
+
             <a href="https://leetcode.com/" target="_blank" rel="noreferrer">
               LeetCode
             </a>
-            <a href="mailto:727724eucs297@skcet.ac.in">
-              Email
-            </a>
+
+            <a href="mailto:727724eucs297@skcet.ac.in">Email</a>
           </div>
         </section>
 
