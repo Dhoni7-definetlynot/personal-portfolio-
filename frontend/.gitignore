@@ -22,3 +22,25 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.production
+target/
+*.log
+.DS_Store
+
+# VS Code optional
+.vscode/
+
+# Java / Spring Boot
+*.class
+*.jar
+*.war
+target/
+
+# Database/password files
+application.properties
+application.yml
