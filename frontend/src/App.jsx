@@ -444,31 +444,31 @@ function App() {
           </div>
         </section>
 
-        <section id="certifications" className="section">
-          <p className="section-kicker">Achievements</p>
-          <h2>Certifications</h2>
+       <section id="certifications" className="section">
+  <p className="section-kicker">Achievements</p>
+  <h2>Certifications</h2>
 
-          <div className="certificate-grid">
-            {certifications.map((certificate) => (
-              <div className="certificate-card" key={certificate.id}>
-                <h3>{certificate.title}</h3>
-                <p>{certificate.provider}</p>
-                <span>{certificate.year}</span>
+  <div className="certificate-grid">
+    {certifications.map((certificate) => (
+      <div className="certificate-card" key={certificate.id}>
+        <h3>{certificate.title}</h3>
+        <p>{certificate.provider}</p>
+        <span>{certificate.year}</span>
 
-                {certificate.certificate_link && (
-                  <a
-                    href={certificate.certificate_link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="certificate-link"
-                  >
-                    View Certificate ↗
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
+        {certificate.certificate_link && (
+          <a
+            href={certificate.certificate_link}
+            target="_blank"
+            rel="noreferrer"
+            className="certificate-link"
+          >
+            View Certificate ↗
+          </a>
+        )}
+      </div>
+    ))}
+  </div>
+</section>
 
         <section id="profiles" className="section profiles-section">
           <p className="section-kicker">Online Presence</p>
@@ -476,22 +476,22 @@ function App() {
 
           <div className="profile-links">
             <a
-              href="https://www.linkedin.com/"
+              href="https://www.linkedin.com/in/veerakarthikeyan-v-20693a32b/"
               target="_blank"
               rel="noreferrer"
             >
               LinkedIn
             </a>
 
-            <a href={GITHUB_PROFILE_LINK} target="_blank" rel="noreferrer">
+            <a href="https://github.com/Dhoni7-definetlynot" target="_blank" rel="noreferrer">
               GitHub
             </a>
 
-            <a href="https://leetcode.com/" target="_blank" rel="noreferrer">
+            <a href="https://leetcode.com/u/VeeraKarthikeyan/" target="_blank" rel="noreferrer">
               LeetCode
             </a>
 
-            <a href="mailto:727724eucs297@skcet.ac.in">Email</a>
+            <a href="mailto:chitraveera155@gmail.com">Email</a>
           </div>
         </section>
 

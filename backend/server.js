@@ -1,159 +1,108 @@
 const express = require("express");
 const cors = require("cors");
+const mysql = require("mysql2/promise");
 require("dotenv").config();
 
-const { pool, testConnection } = require("./db");
-
 const app = express();
-
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"],
-  })
-);
-
-app.use(express.json());
-
 const PORT = process.env.PORT || 5000;
 
-app.get("/", (req, res) => {
-  res.send("Karthi Portfolio Backend is running successfully.");
+app.use(cors());
+app.use(express.json());
+
+// MySQL connection directly inside server.js
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "portfolio_db",
+  waitForConnections: true,
+  connectionLimit: 10,
 });
 
-app.get("/api/health", async (req, res) => {
+// Test database connection
+async function testConnection() {
   try {
-    const [databaseResult] = await pool.query(
-      "SELECT DATABASE() AS current_database"
-    );
-
-    const [projectCount] = await pool.query(
-      "SELECT COUNT(*) AS count FROM projects"
-    );
-
-    const [skillCount] = await pool.query(
-      "SELECT COUNT(*) AS count FROM skills"
-    );
-
-    res.json({
-      status: "ok",
-      database: databaseResult[0].current_database,
-      project_count: projectCount[0].count,
-      skill_count: skillCount[0].count,
-    });
+    const connection = await pool.getConnection();
+    console.log("MySQL database connected successfully.");
+    connection.release();
   } catch (error) {
-    res.status(500).json({
-      message: "Health check failed",
-      error: error.message,
-    });
+    console.error("Database connection failed:", error.message);
   }
+}
+
+testConnection();
+
+// Home route
+app.get("/", (req, res) => {
+  res.send("Portfolio backend is running successfully.");
 });
 
+// Projects route
 app.get("/api/projects", async (req, res) => {
   try {
-    const [projects] = await pool.query(
-      "SELECT * FROM projects ORDER BY id ASC"
-    );
-
-    res.json(projects);
+    const [rows] = await pool.query("SELECT * FROM projects");
+    res.json(rows);
   } catch (error) {
-    res.status(500).json({
-      message: "Error fetching projects",
-      error: error.message,
-    });
+    console.error("Projects fetch error:", error);
+    res.status(500).json({ message: "Failed to fetch projects" });
   }
 });
 
+// Skills route
 app.get("/api/skills", async (req, res) => {
   try {
-    const [skills] = await pool.query("SELECT * FROM skills ORDER BY id ASC");
-
-    res.json(skills);
+    const [rows] = await pool.query("SELECT * FROM skills");
+    res.json(rows);
   } catch (error) {
-    res.status(500).json({
-      message: "Error fetching skills",
-      error: error.message,
-    });
+    console.error("Skills fetch error:", error);
+    res.status(500).json({ message: "Failed to fetch skills" });
   }
 });
 
+// Experience route
 app.get("/api/experience", async (req, res) => {
   try {
-    const [experience] = await pool.query(
-      "SELECT * FROM experience ORDER BY id ASC"
-    );
-
-    res.json(experience);
+    const [rows] = await pool.query("SELECT * FROM experience");
+    res.json(rows);
   } catch (error) {
-    res.status(500).json({
-      message: "Error fetching experience",
-      error: error.message,
-    });
+    console.error("Experience fetch error:", error);
+    res.status(500).json({ message: "Failed to fetch experience" });
   }
 });
 
+// Certifications route
 app.get("/api/certifications", async (req, res) => {
   try {
-    const [certifications] = await pool.query(
-      "SELECT * FROM certifications ORDER BY id ASC"
-    );
-
-    res.json(certifications);
+    const [rows] = await pool.query("SELECT * FROM certifications");
+    res.json(rows);
   } catch (error) {
-    res.status(500).json({
-      message: "Error fetching certifications",
-      error: error.message,
-    });
+    console.error("Certifications fetch error:", error);
+    res.status(500).json({ message: "Failed to fetch certifications" });
   }
 });
 
+// Contact form route
 app.post("/api/contact", async (req, res) => {
   try {
     const { name, email, message } = req.body;
 
     if (!name || !email || !message) {
-      return res.status(400).json({
-        message: "Name, email, and message are required.",
-      });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    const sql =
-      "INSERT INTO contacts (name, email, message) VALUES (?, ?, ?)";
-
-    const [result] = await pool.query(sql, [name, email, message]);
-
-    res.status(201).json({
-      message: "Contact message saved successfully.",
-      contactId: result.insertId,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error saving contact message",
-      error: error.message,
-    });
-  }
-});
-
-app.get("/api/contacts", async (req, res) => {
-  try {
-    const [contacts] = await pool.query(
-      "SELECT * FROM contacts ORDER BY created_at DESC"
+    await pool.query(
+      "INSERT INTO contacts (name, email, message) VALUES (?, ?, ?)",
+      [name, email, message]
     );
 
-    res.json(contacts);
+    res.status(201).json({ message: "Message saved successfully" });
   } catch (error) {
-    res.status(500).json({
-      message: "Error fetching contacts",
-      error: error.message,
-    });
+    console.error("Contact save error:", error);
+    res.status(500).json({ message: "Failed to save message" });
   }
 });
 
-testConnection()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Backend server running on http://localhost:${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error("Database connection failed:", error.message);
-  });
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
